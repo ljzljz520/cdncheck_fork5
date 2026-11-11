@@ -1,6 +1,7 @@
 package generate
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -37,15 +38,17 @@ func scrapeIncapsula(httpClient *http.Client) ([]string, error) {
 		_ = resp.Body.Close()
 	}()
 
+	if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
+		return nil, fmt.Errorf("incapsula returned status %s", resp.Status)
+	}
+
 	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
-	body := string(data)
 
-	cidrs := cidrRegex.FindAllString(body, -1)
-	if len(cidrs) == 0 {
-		return nil, errNoCidrFound
-	}
-	return getValidateCidrs(cidrs), nil
+	// The integration API is documented to return a strict plain-text CIDR
+	// list for resp_format=text, so decode it as text rather than regex
+	// scraping the whole body.
+	return decodeTextList(data)
 }

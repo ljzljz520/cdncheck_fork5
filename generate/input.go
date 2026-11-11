@@ -1,11 +1,9 @@
 package generate
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"log"
 	"net"
 	"net/http"
@@ -13,11 +11,9 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/PuerkitoBio/goquery"
 	"github.com/ipinfo/go/v2/ipinfo"
 	"github.com/projectdiscovery/cdncheck"
 	"github.com/projectdiscovery/mapcidr"
-	stringsutil "github.com/projectdiscovery/utils/strings"
 )
 
 var asnmapURL = "https://asn.projectdiscovery.io/api/v1/asn"
@@ -115,12 +111,13 @@ func (c *Category) fetchInputItem(options *Options, data map[string][]string) er
 	for provider, cidrs := range c.CIDR {
 		data[provider] = appendUniqueCIDRs(data[provider], cidrs)
 	}
-	for provider, urls := range c.URLs {
-		for _, item := range urls {
-			cidrs, err := getCIDRFromURL(item)
+	client := httpClientOrDefault(options.HTTPClient)
+	for provider, sources := range c.URLs {
+		for _, item := range sources {
+			cidrs, err := fetchSource(client, item)
 			if err != nil {
-				log.Printf("[err] url %s (%s): %s\n", provider, item, err)
-				errs = append(errs, fmt.Errorf("url %s (%s): %w", provider, item, err))
+				log.Printf("[err] url %s (%s): %s\n", provider, item.URL, err)
+				errs = append(errs, fmt.Errorf("url %s (%s): %w", provider, item.URL, err))
 				continue
 			}
 			data[provider] = appendUniqueCIDRs(data[provider], cidrs)
@@ -150,7 +147,6 @@ func (c *Category) fetchInputItem(options *Options, data map[string][]string) er
 }
 
 var errNoCidrFound = errors.New("no cidrs found for url")
-
 
 // getASNMapASN returns cidrs for an ASN using ProjectDiscovery's asnmap service
 func getASNMapASN(httpClient *http.Client, pdcpKey string, asn string) ([]string, error) {
@@ -241,53 +237,4 @@ func getIpInfoASN(httpClient *http.Client, token string, asn string) ([]string, 
 		return nil, errNoCidrFound
 	}
 	return cidrs, nil
-}
-
-// getCIDRFromURL scrapes CIDR ranges for a URL using a regex
-func getCIDRFromURL(URL string) ([]string, error) {
-	retried := false
-retry:
-	req, err := http.NewRequest(http.MethodGet, URL, nil)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0")
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer func() {
-		_ = resp.Body.Close()
-	}()
-
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	// if the body type is HTML, retry with the first json link in the page (special case for Azure download page to find changing URLs)
-	if stringsutil.ContainsAnyI(resp.Header.Get("Content-Type"), "text/html") && !retried {
-		var extractedURL string
-		docReader, err := goquery.NewDocumentFromReader(bytes.NewReader(data))
-		if err != nil {
-			return nil, err
-		}
-		docReader.Find("a").Each(func(i int, item *goquery.Selection) {
-			src, ok := item.Attr("href")
-			if ok && stringsutil.ContainsAny(src, "ServiceTags_Public_") && extractedURL == "" {
-				extractedURL = src
-			}
-		})
-		URL = extractedURL
-		retried = true
-		goto retry
-	}
-
-	body := string(data)
-
-	cidrs := cidrRegex.FindAllString(body, -1)
-	if len(cidrs) == 0 {
-		return nil, errNoCidrFound
-	}
-	return getValidateCidrs(cidrs), nil
 }

@@ -13,8 +13,11 @@ type Categories struct {
 
 // Category contains configuration for a specific category
 type Category struct {
-	// URLs contains a list of static URLs for CIDR list
-	URLs map[string][]string `yaml:"urls"`
+	// URLs contains a list of source URLs for CIDR lists. Each source
+	// explicitly selects the response decoder through its Format field;
+	// legacy plain-string URL entries are still accepted and fall back to
+	// the regex extractor.
+	URLs map[string]Sources `yaml:"urls"`
 	// ASN contains ASN numbers for an Input item
 	ASN map[string][]string `yaml:"asn"`
 	// CIDR contains a list of CIDRs for Input item

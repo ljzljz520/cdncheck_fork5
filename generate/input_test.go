@@ -19,8 +19,8 @@ func TestFetchInputItem_MergesMultipleURLsPerProvider(t *testing.T) {
 	defer srv2.Close()
 
 	cat := &Category{
-		URLs: map[string][]string{
-			"provider": {srv1.URL, srv2.URL},
+		URLs: map[string]Sources{
+			"provider": {{URL: srv1.URL}, {URL: srv2.URL}},
 		},
 	}
 	data := map[string][]string{}
@@ -48,9 +48,9 @@ func TestFetchInputItem_ContinuesOnURLError(t *testing.T) {
 	bad.Close() // force connection refused for predictable failure
 
 	cat := &Category{
-		URLs: map[string][]string{
-			"ok":      {good.URL},
-			"failing": {bad.URL},
+		URLs: map[string]Sources{
+			"ok":      {{URL: good.URL}},
+			"failing": {{URL: bad.URL}},
 		},
 	}
 	data := map[string][]string{}
@@ -79,8 +79,8 @@ func TestFetchInputItem_StaticCIDRsMergedWithURLs(t *testing.T) {
 		CIDR: map[string][]string{
 			"provider": {"10.0.0.0/24"},
 		},
-		URLs: map[string][]string{
-			"provider": {srv.URL},
+		URLs: map[string]Sources{
+			"provider": {{URL: srv.URL}},
 		},
 	}
 	data := map[string][]string{}
@@ -102,8 +102,8 @@ func TestFetchInputItem_NoAuthSkipsASNNotURLs(t *testing.T) {
 	defer srv.Close()
 
 	cat := &Category{
-		URLs: map[string][]string{
-			"provider": {srv.URL},
+		URLs: map[string]Sources{
+			"provider": {{URL: srv.URL}},
 		},
 		ASN: map[string][]string{
 			"asn-only": {"AS12345"},

@@ -13,17 +13,23 @@ cdn:
     - AS149640
   urls:
     gcore:
-    - https://api.gcore.com/cdn/public-ip-list
+    - url: https://api.gcore.com/cdn/public-ip-list
+      format: gcore
     cloudfront:
-    - https://d7uri8nf7uskq.cloudfront.net/tools/list-cloudfront-ips
+    - url: https://d7uri8nf7uskq.cloudfront.net/tools/list-cloudfront-ips
+      format: cloudfront
     fastly:
-    - https://api.fastly.com/public-ip-list
+    - url: https://api.fastly.com/public-ip-list
+      format: fastly
     google:
-    - https://www.gstatic.com/ipranges/goog.json
+    - url: https://www.gstatic.com/ipranges/goog.json
+      format: google
     gocache:
-    - https://gocache.com.br/ips
+    - url: https://gocache.com.br/ips
+      format: text
     arvancloud:
-    - https://www.arvancloud.ir/fa/ips.txt
+    - url: https://www.arvancloud.ir/fa/ips.txt
+      format: text
   cidr:
     f5:
     - 23.158.32.0/25
@@ -5441,26 +5447,36 @@ waf:
     - 185.94.143.0/25
   urls:
     cloudflare:
-    - https://api.cloudflare.com/client/v4/ips
-    - https://ipinfo.io/widget/demo/cloudflare.com?dataset=ranges
+    - url: https://api.cloudflare.com/client/v4/ips
+      format: cloudflare
+    - url: https://ipinfo.io/widget/demo/cloudflare.com?dataset=ranges
+      format: ipinfo
     arvancloud:
-    - https://www.arvancloud.ir/fa/ips.txt
+    - url: https://www.arvancloud.ir/fa/ips.txt
+      format: text
 cloud:
   urls:
     aws:
-    - https://ip-ranges.amazonaws.com/ip-ranges.json
+    - url: https://ip-ranges.amazonaws.com/ip-ranges.json
+      format: aws
     google:
-    - https://www.gstatic.com/ipranges/cloud.json
+    - url: https://www.gstatic.com/ipranges/cloud.json
+      format: google
     oracle:
-    - https://docs.oracle.com/en-us/iaas/tools/public_ip_ranges.json
+    - url: https://docs.oracle.com/en-us/iaas/tools/public_ip_ranges.json
+      format: oracle
     azure:
-    - https://www.microsoft.com/en-us/download/confirmation.aspx?id=56519
+    - url: https://www.microsoft.com/en-us/download/confirmation.aspx?id=56519
+      format: azure
     zscaler:
-    - https://api.config.zscaler.com/zscaler.net/cenr/json
+    - url: https://api.config.zscaler.com/zscaler.net/cenr/json
+      format: zscaler
     office365:
-    - https://endpoints.office.com/endpoints/worldwide?clientrequestid=b10c5ed1-bad1-445f-b386-b919946339a7
+    - url: https://endpoints.office.com/endpoints/worldwide?clientrequestid=b10c5ed1-bad1-445f-b386-b919946339a7
+      format: office365
     arvancloud:
-    - https://www.arvancloud.ir/fa/ips.txt
+    - url: https://www.arvancloud.ir/fa/ips.txt
+      format: text
   cidr:
     gabia:
     - 45.115.152.0/22
